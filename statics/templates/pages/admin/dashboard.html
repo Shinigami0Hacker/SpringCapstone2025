@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="p-4 bg-white">
+    <p class="text-4xl font-bold text-grey-400 mb-4">Dashboard</p>
+    <hr class="h-px my-4 bg-gray-200 border-0 dark:bg-gray-700">
+    <div>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="border-2 border-grey-500 p-4">
+                <canvas id="cpuChart" class="w-full"></canvas>
+            </div>
+            <div class="border-2 border-grey-500 p-4">
+                <canvas id="ramChart" class="w-full"></canvas>
+            </div>
+        </div>
+        <p class="text-4xl font-bold text-grey-400 mb-4">Health check</p>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="border-2 border-grey-500 p-4">
+                <p class="text-2xl font-bold">Inference status</p>
+                <div>
+                    <span class="font-semibold">Is any session is running: </span> 
+                    {% if is_running %}
+                    <span
+                        class="text-green-500">YES</span><br>
+                    {% else %}
+                    <span
+                    class="text-red-500">YES</span><br>
+                    {% endif %}
+                    <span class="font-semibold">Total schema: </span> <span class="text-purple-500">{{total_schema}}</span><br>
+                    <span class="font-semibold">Sessions have run: </span> <span class="text-blue-500">{{total_session}}</span><br>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const socket_url = (location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/system/metrics";
+        console.log(socket_url)
+        const socket = new WebSocket(socket_url);
+
+        const ram_ctx = document.getElementById('ramChart');
+        const cpu_ctx = document.getElementById('cpuChart');
+
+        const cpu_by_time = [];
+        const ram_by_time = [];
+
+        const maxPoints = 20;
+
+        const labels = [];
+
+        const cpu_data = {
+            labels: labels,
+            datasets: [{
+                label: 'CPU Usage (%)',
+                data: cpu_by_time,
+                fill: false,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        };
+
+        const ram_data = {
+            labels: labels,
+            datasets: [{
+                label: 'RAM Usage (%)',
+                data: ram_by_time,
+                fill: false,
+                borderColor: 'rgb(192, 75, 75)',
+                tension: 0.1
+            }]
+        };
+
+        const cpu_chart = new Chart(cpu_ctx, {
+            type: 'line',
+            data: cpu_data,
+            options: {
+                animation: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Real-Time CPU\'s Usage',
+                        font: {
+                            size: 18
+                        }
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        const ram_chart = new Chart(ram_ctx, {
+            type: 'line',
+            data: ram_data,
+            options: {
+                animation: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Real-Time RAM\'s Usage',
+                        font: {
+                            size: 18
+                        }
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            const now = new Date().toLocaleTimeString();
+
+            labels.push(now);
+            cpu_by_time.push(data.cpu);
+            ram_by_time.push(data.ram_percent);
+
+            if (labels.length > maxPoints) {
+                labels.shift();
+                cpu_by_time.shift();
+                ram_by_time.shift();
+            }
+
+            cpu_chart.update();
+            ram_chart.update();
+        };
+    </script>
+{% endblock %}

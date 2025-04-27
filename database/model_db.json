@@ -1,0 +1,1 @@
+{"_default": {"1": {"model_id": 1, "name": "Whisper", "version": "tiny", "path": "./models/hubs/pho-whisper-tiny"}, "2": {"model_id": 2, "name": "Whisper", "version": "base", "path": "./models/hubs/pho-whisper-base"}}}

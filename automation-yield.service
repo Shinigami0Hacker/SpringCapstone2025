@@ -1,0 +1,16 @@
+[Unit]
+Description=Aumation yield record
+After=network.target
+
+[Service]
+User=shinigami
+WorkingDirectory=/opt/my_script/
+ExecStart=/bin/bash /opt/my_script/run_script.sh
+Restart=always
+RestartSec=5
+
+# Environment variables (if needed)
+Environment="PYTHONPATH=/opt/my_script"
+
+[Install]
+WantedBy=multi-user.target

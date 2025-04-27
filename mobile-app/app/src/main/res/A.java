@@ -1,0 +1,1 @@
+in whisper, how many hours that vietnamese languages was trained on 

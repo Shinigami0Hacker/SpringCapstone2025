@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="p-4 bg-white">
+    <div class="mb-4 flex gap-2">
+        <p class="text-4xl font-bold text-grey-400">Session</p>
+        <div class="flex" title="This page for management of on-running session and access to record history!">
+        <svg class="w-6 h-6 text-gray-800 self-end" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+            <path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm9.008-3.018a1.502 1.502 0 0 1 2.522 1.159v.024a1.44 1.44 0 0 1-1.493 1.418 1 1 0 0 0-1.037.999V14a1 1 0 1 0 2 0v-.539a3.44 3.44 0 0 0 2.529-3.256 3.502 3.502 0 0 0-7-.255 1 1 0 0 0 2 .076c.014-.398.187-.774.48-1.044Zm.982 7.026a1 1 0 1 0 0 2H12a1 1 0 1 0 0-2h-.01Z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+    </div>
+    <hr class="h-px my-4 bg-gray-200 border-0 dark:bg-gray-700">
+    <div class="max-h-64 relative overflow-x-auto">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" id="session-table">
+            <thead class="text-xs text-gray-900 uppercase bg-gray-50 dark:bg-gray-300 ">
+                <tr>
+                    <th scope="col" class="px-6 py-3">
+                        Name
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Created date
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Modification
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <button type="button" id="openModal" class="text-white mt-5 bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700">Create new session</button>
+    {% if is_running %}
+    <button type="button" id="openConfiguration" class="text-white mt-5 bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700">Configure current running session</button>
+    {% endif %}
+    </button>
+    <div id="modal" class="fixed inset-0 flex items-center justify-center bg-gray-50/75 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 border-gray-500 border relative">
+            <div class="absolute top-3 right-0">
+                <button id="closeModal" class="px-4 py-2 text-gray rounded-lg hover:text-gray-500">
+                    <span class="material-symbols-outlined">cancel</span>
+                </button>
+            </div>
+            <h2 class="text-2xl font-bold">Create a session</h2>
+            <form action="" method="POST">
+                <label for="title" class="block text-sm font-medium text-gray-700">Name</label>
+                <input type="text" name="name" class="w-full my-2 h-10 border border-gray-300 rounded-lg p-2 resize-none" required>
+                <label for="title" class="block text-sm font-medium text-gray-700">Schema</label>
+                <select id="schema-select" name="schema_id" class="w-full my-2 h-10 border border-gray-300 rounded-lg p-2 resize-none"></select>
+                <label for="title" class="block text-sm font-medium text-gray-700">Model</label>
+                <select id="model-select" name="model_id" class="w-full my-2 h-10 border border-gray-300 rounded-lg p-2 resize-none"></select>
+                <button type="submit" class="mt-4 text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700">Create</button>
+            </form>
+        </div>
+    </div>
+    <div id="configModal" class="fixed inset-0 flex items-center justify-center bg-gray-50/75 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 border-gray-500 border relative"
+            <div class="absolute top-3 right-0">
+                <button id="closeModal" class="px-4 py-2 text-gray rounded-lg hover:text-gray-500">
+                    <span class="material-symbols-outlined">cancel</span>
+                </button>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">Model runnnig configuration</h2>
+            <form action="" method="POST">
+            <!-- </form>
+                <button
+                id="copyButton"
+                class="flex items-center space-x-2 px-3 py-1 border rounded-lg text-sm bg-white hover:bg-gray-100 active:bg-gray-200 transition-all"
+                onclick=''
+                >
+                <div id="copyIcon" class="w-4 h-4" data-lucide="clipboard-copy"></div> -->
+            <!-- </div> -->
+            <p>Current session id: {{ session_id }}</p>
+            <!-- <span>Copy Running session to clipboard</span> -->
+            </button>
+            <button type="button" onclick="endSession()" class="mt-4 text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-red-600 dark:hover:bg-red-700" >End session</button>
+        </div>
+    </div>
+</div>
+<script>
+    lucide.createIcons();
+    
+    function copyTextToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+    const button = document.getElementById('copyButton');
+        
+        const icon = document.getElementById('copyIcon');
+
+        icon.setAttribute('data-lucide', 'check');
+        lucide.createIcons(); // Refresh icons
+        button.classList.add('text-green-600');
+
+        setTimeout(() => {
+        icon.setAttribute('data-lucide', 'clipboard-copy');
+        lucide.createIcons(); // Refresh again
+        button.classList.remove('text-green-600');
+        }, 1500);
+    });
+    }
+    const modal = document.getElementById("modal");
+    const openBtn = document.getElementById("openModal");
+    const closeBtn = document.getElementById("closeModal");
+
+    const configModal = document.getElementById("configModal");
+    const openConfigModal =  document.getElementById("openConfiguration")
+
+    async function endSession(){
+        await ("/admin/session/end")
+    }
+    openBtn.addEventListener("click", () => {
+        modal.classList.remove("hidden");
+    });
+
+    openConfigModal.addEventListener("click", () => {
+        configModal.classList.remove("hidden");
+    });
+
+
+    closeBtn.addEventListener("click", () => {
+        modal.classList.add("hidden");
+        configModal.classList.add("hidden");
+    });
+
+    window.addEventListener("click", (e) => {
+        if (e.target === modal) modal.classList.add("hidden");
+        if (e.target === modal) configModal.classList.add("hidden");
+    });
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") modal.classList.add("hidden");
+        if (e.key === "Escape") configModal.classList.add("hidden");
+    });
+    window.addEventListener('DOMContentLoaded', loadOptions);
+    window.addEventListener('DOMContentLoaded', loadTables);
+    function populateSelection(selectId, data) {
+            const selectElement = document.getElementById(selectId);
+            selectElement.innerHTML = '';
+            data.forEach(item => {
+                const key = Object.keys(item)[0];
+                const value = item[key];
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = key;
+                selectElement.appendChild(option);
+            });
+        }
+    async function loadOptions() {
+        const models_response = await fetch("/admin/hubs/alls");
+        const schemas_response = await fetch("/admin/schema/alls");
+        let models_data = await models_response.json();
+        let schemas_data = await schemas_response.json();
+        models_data = models_data.map(
+            (x) => {
+                return { [`${x.name}-${x.version}`]: x.model_id }
+            }
+        )
+        schemas_data = schemas_data.map(
+            (x) => {
+                return { [x.name]: x.id }
+            }
+        )         
+        populateSelection('model-select', models_data);  
+        populateSelection('schema-select', schemas_data);
+    }
+
+    async function loadTables() {
+        try {
+            const response = await fetch("/admin/session/alls");
+            const data = await response.json();
+            const tableBody = document.querySelector("#session-table tbody");
+            tableBody.innerHTML = "";
+            function insertTable(e){
+                const row = document.createElement("tr");
+                row.className = "bg-white border-b text-gray-600 dark:bg-gray-200 dark:border-gray-700 border-gray-200";
+                const name = e.name;
+                const created_date = e.created_date;
+
+                const nameCell = document.createElement("td");
+                nameCell.className = "px-6 py-4"
+                nameCell.textContent = name
+                const dateCell = document.createElement("td");
+                dateCell.className = "px-6 py-4"
+                dateCell.textContent = created_date
+                const schemaViewCell = document.createElement("td");
+                const viewButton = document.createElement("button");
+                viewButton.textContent = "View history"
+                viewButton.className = "text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700"
+
+                schemaViewCell.appendChild(viewButton)
+                
+                row.appendChild(nameCell);
+                row.appendChild(dateCell);
+                row.appendChild(schemaViewCell)
+                tableBody.appendChild(row)
+            }
+            data.forEach(
+                insertTable
+            )
+        } catch (error) {
+            console.error("Failed to fetch metrics:", error);
+        }
+    }
+</script>
+{% endblock %}

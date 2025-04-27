@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:descendantFocusability="blocksDescendants"
+    android:clickable="false">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="false"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:text="Lời giới thiệu"
+                    android:textSize="20dp"
+                    android:textStyle="bold" />
+                <ImageButton
+                    android:id="@+id/userManagement"
+                    android:background="@null"
+                    android:contentDescription="TODO"
+                    android:src="@drawable/manage_accounts_24px"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+                    />
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:background="#FF000000" />
+
+                <TextView
+                    android:id="@+id/introText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:lineSpacingExtra="4dp"
+                    android:text="Trước tiên, chúng tôi xin gửi lời cảm ơn chân thành tới các nhân viên đã hợp tác để thu nhập dữ liệu cho hệ thống ASR nhằm hướng tới chuyển đổi số, áp dụng trí tuệ nhân tạo vào trong sản xuất, nâng cao chất lượng và năng suất của doanh nghiệp.\nHướng dẫn sử dụng:\n- Mọi người hãy nhấp vào các mục ở dưới phần danh sách nhiệm vụ để thực hiện.\nXem video hướng dẫn tại đây:"
+                    android:textAlignment="textStart"
+                    android:textColor="#000000"
+                    android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="10dp"
+                        android:layout_columnSpan="4"
+                        android:text="Danh sách nhiệm vụ"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:background="#FF000000" />
+
+                <ListView
+                    android:id="@+id/topicListView"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="20px"
+                    android:layout_weight="1"
+                    android:divider="@null"
+                    android:dividerHeight="10dp"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false" />
+                <Button
+                    android:id="@+id/syncButton"
+                    android:layout_gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Đồng bộ hóa" />
+            </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

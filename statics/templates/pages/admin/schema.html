@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="p-4 bg-white">
+     <div class="mb-4 flex gap-2">
+        <p class="text-4xl font-bold text-grey-400">Schema</p>
+        <div class="flex" title="This page for management of schema and their creation.">
+        <svg class="w-6 h-6 text-gray-800 self-end" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+            <path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm9.008-3.018a1.502 1.502 0 0 1 2.522 1.159v.024a1.44 1.44 0 0 1-1.493 1.418 1 1 0 0 0-1.037.999V14a1 1 0 1 0 2 0v-.539a3.44 3.44 0 0 0 2.529-3.256 3.502 3.502 0 0 0-7-.255 1 1 0 0 0 2 .076c.014-.398.187-.774.48-1.044Zm.982 7.026a1 1 0 1 0 0 2H12a1 1 0 1 0 0-2h-.01Z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+    </div>
+    <hr class="h-px my-4 bg-gray-200 border-0 dark:bg-gray-700">
+    <div class="max-h-64 relative overflow-x-auto">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" id="schema-table">
+            <thead class="text-xs text-gray-900 uppercase bg-gray-50 dark:bg-gray-300 ">
+                <tr>
+                    <th scope="col" class="px-6 py-3">
+                        Name
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Created date
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Content
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <button type="button" id="openForm"
+        class="text-white mt-5 bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700">Create
+        new</button>
+    </button>
+    <div id="register-schema-form" class="fixed inset-0 flex items-center justify-center bg-gray-50/75 hidden">
+        
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 border-gray-500 border relative">
+            <div class="absolute top-3 right-0">
+                <button id="closeForm" class="px-4 py-2 text-gray rounded-lg hover:text-gray-500">
+                    <span class="material-symbols-outlined">
+                        cancel
+                    </span>
+                </button>
+            </div>
+            <h2 class="text-2xl font-bold">Editor Engine</h2>
+            <form id="schema-form" action="", method="POST"  enctype="multipart/form-data">
+                <label for="title" class="block text-sm font-medium text-gray-700">Name</label>
+                <input type="text" name="name" class="w-full my-2 h-10 border border-gray-300 rounded-lg p-2 resize-none" required>
+                <label class="block text-sm font-medium text-gray-700 mb-1 mt-1">Upload Schema file</label>
+                <input id="file" name="file" accept=".json" type="file" class="w-full border border-gray-300 rounded-lg p-2 file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-blue-600 file:text-white hover:file:bg-blue-700" required/>
+                <p class="invisible" id="status-text">No content</p>
+                <button type="submit"
+                class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700">Submit</button>
+            </form>
+        </div>
+    </div>
+    <div id="schemaModal" class="fixed inset-0 flex items-center justify-center bg-gray-50/75 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 border-gray-500 border relative p-6 h-[600px]">
+            <div class="absolute top-3 right-0">
+                <button id="closeForm" class="px-4 py-2 text-gray rounded-lg hover:text-gray-500">
+                    <span class="material-symbols-outlined">
+                        cancel
+                    </span>
+                </button>
+            </div>
+            <h2 class="text-2xl font-bold">Model runnnig configuration</h2>
+            <textarea id="schemaContent" class="mt-5 h-[500px] w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none" disabled></textarea>
+        </div>
+    </div>
+</div>
+<script>
+    const modal = document.getElementById("register-schema-form");
+    const openBtn = document.getElementById("openForm");
+    const closeBtn = document.getElementById("closeForm");
+    
+    const schemaViewModal = document.getElementById("schemaModal");
+
+    function openModal(data){
+        console.log(data)
+        const schemaContent = document.getElementById("schemaContent");
+        schemaContent.textContent = data;
+        schemaViewModal.classList.remove("hidden");
+    }
+
+    openBtn.addEventListener("click", () => {
+        modal.classList.remove("hidden");
+    });
+
+    closeBtn.addEventListener("click", () => {
+        modal.classList.add("hidden");
+        schemaViewModal.classList.add("hidden");
+    });
+
+    window.addEventListener("click", (e) => {
+        if (e.target === modal) modal.classList.add("hidden");
+        if (e.target == schemaViewModal) schemaViewModal.classList.add("hidden")
+    });
+
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") modal.classList.add("hidden");
+        if (e.key == "Escape") schemaViewModal.classList.add("hidden")
+    });
+
+    function updateStatusText(text){
+        const statusText = document.getElementById("status-text");
+        statusText.textContent = text;
+    }
+    async function loadTables() {
+        try {
+            const response = await fetch("/admin/schema/alls");
+            const data = await response.json();
+            const tableBody = document.querySelector("#schema-table tbody");
+            tableBody.innerHTML = "";
+            function insertTable(e){
+                const row = document.createElement("tr");
+                row.className = "bg-white border-b text-gray-600 dark:bg-gray-200 dark:border-gray-700 border-gray-200";
+                const name = e.name;
+                const created_date = e.created_date;
+                const content = e.schema_content
+                const nameCell = document.createElement("td");
+                nameCell.className = "px-6 py-4"
+                nameCell.textContent = name
+                const dateCell = document.createElement("td");
+                dateCell.className = "px-6 py-4"
+                dateCell.textContent = created_date
+                const schemaViewCell = document.createElement("td");
+                const viewButton = document.createElement("button");
+                viewButton.textContent = "View schema"
+                viewButton.className = "text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700"
+                viewButton.onclick = function() {
+                    openModal(JSON.stringify(content, null, 2))
+                }
+                schemaViewCell.appendChild(viewButton)
+                row.appendChild(nameCell);
+                row.appendChild(dateCell);
+                row.appendChild(schemaViewCell)
+                tableBody.appendChild(row)
+            }
+            data.forEach(
+                insertTable
+            )
+        } catch (error) {
+            console.error("Failed to fetch metrics:", error);
+        }
+    }
+    window.addEventListener('DOMContentLoaded', loadTables);
+    document.getElementById('schema-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            
+            const formData = new FormData(this);
+            try {
+                const response = await fetch('', {
+                    method: 'POST',
+                    body: formData
+                });
+                const responseText = await response.text()
+                const statusText = document.getElementById('status-text')
+                statusText.classList.remove('invisible')
+                if (response.ok) {
+                    statusText.innerText = responseText;
+                } else {
+                    statusText.innerText = responseText;
+                }
+            } catch (error) {
+                document.getElementById('status-text').innerText = 'Failed to submit form: ' + error.message;
+            }
+        });
+</script>
+{% endblock %}

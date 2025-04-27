@@ -1,0 +1,35 @@
+[
+    {
+        "name": "Tên",
+		"description": "Tên của bạn",
+        "pronuciations":  [
+            "Tên",
+            "Mã"
+        ],
+        "kind": "in",
+        "predefined": "@session('name')"
+    },
+    {
+        "name": "Loại",
+		"description": "Loại cá A/B/C",
+        "pronuciations":  [
+			"Loại"
+        ],
+        "kind": "in",
+        "predefined": [
+            "A",
+            "B",
+            "C"
+        ]
+    },
+    {
+        "name": "Số ký",
+		"description": "Số ký theo kg",
+        "pronuciations":  [
+            "Số ký"
+        ],
+        "kind": "number"
+    }
+]
+
+
