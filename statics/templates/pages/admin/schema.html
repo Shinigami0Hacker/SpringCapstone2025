@@ -11,7 +11,7 @@
         </div>
     </div>
     <hr class="h-px my-4 bg-gray-200 border-0 dark:bg-gray-700">
-    <div class="max-h-64 relative overflow-x-auto">
+    <div class="max-h-80 relative overflow-x-auto">
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" id="schema-table">
             <thead class="text-xs text-gray-900 uppercase bg-gray-50 dark:bg-gray-300 ">
                 <tr>
@@ -52,20 +52,20 @@
                 <input id="file" name="file" accept=".json" type="file" class="w-full border border-gray-300 rounded-lg p-2 file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-blue-600 file:text-white hover:file:bg-blue-700" required/>
                 <p class="invisible" id="status-text">No content</p>
                 <button type="submit"
-                class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700">Submit</button>
+                class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700">Upload</button>
             </form>
         </div>
     </div>
     <div id="schemaModal" class="fixed inset-0 flex items-center justify-center bg-gray-50/75 hidden">
         <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl p-6 border-gray-500 border relative p-6 h-[600px]">
             <div class="absolute top-3 right-0">
-                <button id="closeForm" class="px-4 py-2 text-gray rounded-lg hover:text-gray-500">
+                <button id="closeSchemaBtn" class="px-4 py-2 text-gray rounded-lg hover:text-gray-500">
                     <span class="material-symbols-outlined">
                         cancel
                     </span>
                 </button>
             </div>
-            <h2 class="text-2xl font-bold">Model runnnig configuration</h2>
+            <h2 class="text-2xl font-bold">Schema Viewer</h2>
             <textarea id="schemaContent" class="mt-5 h-[500px] w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none" disabled></textarea>
         </div>
     </div>
@@ -75,6 +75,7 @@
     const openBtn = document.getElementById("openForm");
     const closeBtn = document.getElementById("closeForm");
     
+    const closeSchemaBtn = document.getElementById("closeSchemaBtn");
     const schemaViewModal = document.getElementById("schemaModal");
 
     function openModal(data){
@@ -84,13 +85,16 @@
         schemaViewModal.classList.remove("hidden");
     }
 
+    closeSchemaBtn.addEventListener("click", () => {
+        schemaViewModal.classList.add("hidden");
+    });
+
     openBtn.addEventListener("click", () => {
         modal.classList.remove("hidden");
     });
 
     closeBtn.addEventListener("click", () => {
         modal.classList.add("hidden");
-        schemaViewModal.classList.add("hidden");
     });
 
     window.addEventListener("click", (e) => {
@@ -138,9 +142,7 @@
                 row.appendChild(schemaViewCell)
                 tableBody.appendChild(row)
             }
-            data.forEach(
-                insertTable
-            )
+            data.forEach(insertTable)
         } catch (error) {
             console.error("Failed to fetch metrics:", error);
         }
@@ -156,14 +158,27 @@
                     body: formData
                 });
                 const responseText = await response.text()
-                const statusText = document.getElementById('status-text')
-                statusText.classList.remove('invisible')
+                
                 if (response.ok) {
-                    statusText.innerText = responseText;
+                    Toastify({
+                    text: "Schema uploaded successfully!",
+                    duration: 3000,
+                    gravity: "top", 
+                    position: "right",
+                    backgroundColor: "#4CAF50"
+                    }).showToast();
                 } else {
-                    statusText.innerText = responseText;
+                    Toastify({
+                    text: "Error: " + responseText,
+                    duration: 3000,
+                    gravity: "top", 
+                    position: "right",
+                    backgroundColor: " #ED2939"
+                    }).showToast();
                 }
             } catch (error) {
+                const statusText = document.getElementById('status-text')
+                statusText.classList.remove('invisible')
                 document.getElementById('status-text').innerText = 'Failed to submit form: ' + error.message;
             }
         });

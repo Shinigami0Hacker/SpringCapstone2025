@@ -1,0 +1,44 @@
+[
+    {
+        "name": "Băng",
+		"description": "Số thứ tự băng",
+        "pronuciations":  [
+            "Băng"
+        ],
+        "kind": "number"
+    },
+    {
+        "name": "Chiều dài",
+		"description": "Loại cá A/B/C",
+        "pronuciations":  [
+			"Chiều dài"
+        ],
+        "kind": "in",
+        "predefined": [
+            "A",
+            "B",
+            "C"
+        ]
+    },
+    {
+        "name": "Chiều rộng",
+		"description": "Loại cá A/B/C",
+        "pronuciations":  [
+			"Chiều dài"
+        ],
+        "kind": "in",
+        "predefined": [
+            "A",
+            "B",
+            "C"
+        ]
+    },
+    {
+        "name": "Số ký",
+		"description": "Số ký theo kg",
+        "pronuciations":  [
+            "Số ký"
+        ],
+        "kind": "number"
+    }
+]

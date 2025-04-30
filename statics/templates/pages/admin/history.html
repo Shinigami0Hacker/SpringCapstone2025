@@ -4,15 +4,9 @@
 <head>
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <title>Automatic yiled recording</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.6.1/toastify.css"
-        integrity="sha512-VSD3lcSci0foeRFRHWdYX4FaLvec89irh5+QAGc00j5AOdow2r5MFPhoPEYBUQdyarXwbzyJEO7Iko7+PnPuBw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.6.1/toastify.min.css"
-        integrity="sha512-UiKdzM5DL+I+2YFxK+7TDedVyVm7HMp/bN85NeWMJNYortoll+Nd6PU9ZDrZiaOsdarOyk9egQm6LOJZi36L2g=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.6.1/toastify.min.js"
-        integrity="sha512-79j1YQOJuI8mLseq9icSQKT6bLlLtWknKwj1OpJZMdPt2pFBry3vQTt+NZuJw7NSd1pHhZlu0s12Ngqfa371EA=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.6.1/toastify.css" integrity="sha512-VSD3lcSci0foeRFRHWdYX4FaLvec89irh5+QAGc00j5AOdow2r5MFPhoPEYBUQdyarXwbzyJEO7Iko7+PnPuBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.6.1/toastify.min.css" integrity="sha512-UiKdzM5DL+I+2YFxK+7TDedVyVm7HMp/bN85NeWMJNYortoll+Nd6PU9ZDrZiaOsdarOyk9egQm6LOJZi36L2g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.6.1/toastify.min.js" integrity="sha512-79j1YQOJuI8mLseq9icSQKT6bLlLtWknKwj1OpJZMdPt2pFBry3vQTt+NZuJw7NSd1pHhZlu0s12Ngqfa371EA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=cancel" />
     <meta charset="UTF-8">
@@ -39,32 +33,8 @@
 
 <body class="relative">
     <div class="flex items-center min-h-screen bg-gray-100 gap-4 flex-col p-12 relative">
-        <div class="fixed left-2 bottom-1 flex flex-col justify-between">
-            <div class="fixed left-2 bottom-1 flex flex-col">
-                <button class="p-2 bg-gray-300 rounded-lg" id="debugButton">Open Debug Terminal</button>
-                <form id="uploadAudio" action="debug" method="post" enctype="multipart/form-data">
-                    <input type="file" name="file" accept="audio/*" required />
-                    <button type="submit">Upload</button>
-                </form>
-                <div id="count" data-count="{{ column_name | length }} hidden"></div>
-            </div>
-            <div class="fixed right-2 bottom-1 flex flex-col items-center gap-2">
-                <h5 id="status" class="text-gray-700">Not recording</h5>
-                <h5 id="vadStatus" class="text-gray-500">Voice activity: Idle</h5>
-                <button id="recordButton"
-                    class="flex items-center justify-center w-16 h-16 bg-red-500 rounded-full text-white font-semibold transition-all duration-300 hover:bg-red-600">
-                    <svg id="recordIcon" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24"
-                        fill="currentColor">
-                        <circle cx="12" cy="12" r="8" />
-                    </svg>
-                    <svg id="stopIcon" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 hidden" viewBox="0 0 24 24"
-                        fill="currentColor">
-                        <rect x="6" y="6" width="12" height="12" />
-                    </svg>
-                </button>
-            </div>
-        </div>
         <div class="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-8">
+            
             <h1 class="text-2xl font-bold text-blue-700 mb-6 text-center">
                 {{ session_name }}
             </h1>
@@ -81,7 +51,7 @@
             </div>
         </div>
         <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 mt-6 max-h-80"
-            id="working-table">
+            id="history-table">
             <thead class="text-xs text-gray-900 uppercase bg-gray-50 dark:bg-gray-300 ">
                 <tr>
                     {% for column in column_name %}
@@ -101,6 +71,7 @@
                 Add record
             </button>
         </div>
+        <div id="count" data-count="{{ column_name | length }} hidden"></div>
     </div>
     <div id="debugModal" class="fixed inset-0 flex items-center justify-center bg-gray-50/75 hidden">
         <div class="bg-black rounded-lg shadow-lg w-full max-w-2xl p-6 border-gray-500 border relative h-[600px]">
@@ -118,9 +89,10 @@
             <h2 class="text-2xl font-bold mb-4">Add record</h2>
             <form id="addRecordForm" action="" method="POST">
                 {% for column in column_name %}
-                <label class="block text-sm font-medium text-gray-700">{{ column | title }}</label>
-                <input type="text" name="{{ loop.index0 }}"
-                    class="w-full my-2 h-10 border border-gray-300 rounded-lg p-2 resize-none" required>
+                    <label class="block text-sm font-medium text-gray-700">{{ column | title }}</label>
+                        <input type="text" name="{{ loop.index0 }}"
+                               class="w-full my-2 h-10 border border-gray-300 rounded-lg p-2 resize-none"
+                               required>
                 {% endfor %}
                 <button type="submit"
                     class="mt-4 text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700">
@@ -143,6 +115,8 @@
         </div>
     </div>
     <script>
+        const adapter = `http://${window.location.host}/user/working/{{ session_id }}` 
+
         document.getElementById("addRecordForm").onsubmit = function (e) {
             e.preventDefault()
             const form = e.target;
@@ -152,39 +126,38 @@
                 record: []
             }
             const count = parseInt(document.getElementById("count").dataset.count);
-            for (let i = 0; i < count; i++) {
+            for (let i = 0; i < count; i++){
                 const fieldValue = formData.get(i.toString());
                 addedData.record.push(fieldValue)
             }
-            fetch(`${window.location.href}/add/row`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(addedData)
-            }).then(response => {
-                if (!response.ok) {
-                    Toastify({
-                        text: "Fail to upload!",
-                        duration: 3000,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "#ED2939"
-                    }).showToast();
-                }
-                else {
-                    Toastify({
-                        text: "Record added!",
-                        duration: 3000,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "#4CAF50"
-                    }).showToast();
-                }
-            })
-            loadTables()
+            fetch(`${adapter}/add/row`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(addedData)
+                    }).then(response => {
+                        if (!response.ok) {
+                            Toastify({
+                                text: "Fail to upload!",
+                                duration: 3000,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: "#ED2939"
+                            }).showToast();
+                        }
+                        else {
+                            Toastify({
+                                text: "Record added!",
+                                duration: 3000,
+                                gravity: "top",
+                                position: "right",
+                                backgroundColor: "#4CAF50"
+                            }).showToast();
+                        }
+                    })
+                    loadTables()
         }
-
         const modal = document.getElementById("modal");
         const openBtn = document.getElementById("openRecordAdder");
         const closeBtn = document.getElementById("closeModal");
@@ -196,7 +169,7 @@
 
         let pollingInterval = null;
         async function loadTables() {
-            await fetch(`${window.location.href}/get`).then(async (response) => {
+            await fetch(`${adapter}/get`).then(async (response) => {
                 if (response.ok) {
                     data = await response.json()
                     populateTable(data)
@@ -215,7 +188,7 @@
             }
         }
         function populateTable(data) {
-            const tableBody = document.querySelector("#working-table tbody");
+            const tableBody = document.querySelector("#history-table tbody");
             tableBody.innerHTML = "";
             const transposedData = [];
 
@@ -271,12 +244,13 @@
                 tableBody.appendChild(row);
             });
             function sendUpdateRequest(rowIndex, colIndex, newValue) {
-                if (data.every(x => x[rowIndex] === '')) {
+
+                if (data[rowIndex].every(x => x === '')) {
                     const deletedData = {
                         row: rowIndex,
                         table_id: "{{ temporary_table_id }}"
                     };
-                    fetch(`${window.location.href}/delete/row`, {
+                    fetch(`${adapter}/delete/row`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"
@@ -302,8 +276,8 @@
                         value: newValue,
                         table_id: "{{ temporary_table_id }}"
                     };
-                    data[colIndex][rowIndex] = newValue;
-                    fetch(`${window.location.href}/update`, {
+                    data[rowIndex][colIndex] = newValue;
+                    fetch(`${adapter}/update`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"
@@ -327,35 +301,6 @@
                 }
             }
         }
-        document.getElementById('uploadAudio').addEventListener('submit', async function (event) {
-            event.preventDefault();
-            const formData = new FormData(this);
-            try {
-                const response = await fetch('', {
-                    method: 'POST',
-                    body: formData
-                });
-                const responseText = await response.json()
-                const terminal = document.getElementById('terminal')
-                const line = document.createElement("span")
-                const brk = document.createElement("br")
-                line.className = "text-white"
-                const now = new Date();
-                const timestamp = now.toISOString().replace("T", " ").split(".")[0];
-                line.textContent = `[${timestamp}] - ${responseText["transcription"]}`
-                terminal.appendChild(line)
-                terminal.append(brk)
-            } catch (error) {
-                document.getElementById('status-text').innerText = 'Failed to submit form: ' + error.message;
-            }
-        });
-
-        const debugModal = document.getElementById("debugModal");
-        const debugButton = document.getElementById("debugButton");
-
-        debugButton.addEventListener("click", () => {
-            debugModal.classList.remove("hidden");
-        });
 
         window.addEventListener("click", (e) => {
             if (e.target === debugModal) debugModal.classList.add("hidden");
@@ -365,139 +310,13 @@
             if (e.key === "Escape") debugModal.classList.add("hidden");
         });
 
-        const recordButton = document.getElementById('recordButton');
-        const statusDisplay = document.getElementById('status');
-        const vadStatusDisplay = document.getElementById('vadStatus');
-
-        let mediaRecorder;
-        let audioContext;
-        let processor;
-        let audioChunks = [];
-        let isRecording = false;
-
-        recordButton.addEventListener('click', () => {
-            if (isRecording) {
-                stopRecording();
-            } else {
-                startRecording();
-            }
-        });
-
-        async function startRecording() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const source = audioContext.createMediaStreamSource(stream);
-                processor = audioContext.createScriptProcessor(4096, 1, 1);
-
-                source.connect(processor);
-                processor.connect(audioContext.destination);
-
-                let threshold = 0.02;
-                let isSpeaking = false;
-                let lastSoundTime = Date.now();
-
-                processor.onaudioprocess = function (e) {
-                    const input = e.inputBuffer.getChannelData(0);
-                    let sum = 0.0;
-
-                    for (let i = 0; i < input.length; i++) {
-                        sum += input[i] * input[i];
-                    }
-                    const rms = Math.sqrt(sum / input.length);
-
-                    if (rms > threshold) {
-                        lastSoundTime = Date.now();
-                        if (!isSpeaking) {
-                            isSpeaking = true;
-                            vadStatusDisplay.textContent = "Voice activity: Speaking";
-                        }
-                    } else if (isSpeaking) {
-                        const silenceDuration = (Date.now() - lastSoundTime) / 1000;
-                        vadStatusDisplay.textContent = `Voice activity: Silent (${silenceDuration.toFixed(1)}s)`;
-
-                        if (silenceDuration >= 2) {
-                            isSpeaking = false;
-                            stopRecording();
-                        }
-                    }
-                };
-
-                mediaRecorder.ondataavailable = event => {
-                    audioChunks.push(event.data);
-                };
-
-                mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    const formData = new FormData();
-                    formData.append('file', audioBlob, 'recording.wav');
-
-                    audioChunks = [];
-
-                    if (processor) processor.disconnect();
-                    if (audioContext) audioContext.close();
-                    stream.getTracks().forEach(track => track.stop());
-                    recordButton.disabled = false;
-                    Toastify({
-                        text: "Voice Up!",
-                        duration: 3000,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "#4CAF50"
-                    }).showToast();
-                    const response = await fetch('/user/working/{{ session_id }}', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        Toastify({
-                            text: "Server processed!",
-                            duration: 3000,
-                            gravity: "top",
-                            position: "right",
-                            backgroundColor: "#4CAF50"
-                        }).showToast();
-                        const terminal = document.getElementById('terminal')
-                        const line = document.createElement("span")
-                        const brk = document.createElement("br")
-                        line.className = "text-white"
-                        const now = new Date();
-                        const timestamp = now.toISOString().replace("T", " ").split(".")[0];
-                        line.textContent = `[${timestamp}] - ${result["transcription"]}`
-                        terminal.appendChild(line)
-                        terminal.append(brk)
-                    } else {
-                        Toastify({
-                            text: "No human voice detect, speech again!",
-                            duration: 3000,
-                            gravity: "top",
-                            position: "right",
-                            backgroundColor: "#ED2939"
-                        }).showToast();
-                    }
-                };
-
-                mediaRecorder.start(100);
-                isRecording = true; // Set recording state to true
-                recordButton.disabled = false;
-                statusDisplay.textContent = "Recording... Speak now";
-                vadStatusDisplay.textContent = "Voice activity: Listening...";
-            } catch (error) {
-                statusDisplay.textContent = `Error: ${error.message}`;
-                console.error("Recording error:", error);
-            }
-        }
         function deleteRow(rowIndex) {
             const updatedData = {
                 row: rowIndex,
                 table_id: "{{ temporary_table_id }}"
             };
 
-            fetch(`${window.location.href}/delete/row`, {
+            fetch(`${adapter}/delete/row`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -519,14 +338,6 @@
                 });
         }
 
-        function stopRecording() {
-            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                mediaRecorder.stop();
-            }
-            isRecording = false;
-            statusDisplay.textContent = "Not recording";
-            vadStatusDisplay.textContent = "Voice activity: Idle";
-        }
         startPolling()
         window.addEventListener('DOMContentLoaded', loadTables);
     </script>

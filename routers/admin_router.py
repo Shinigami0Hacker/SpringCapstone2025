@@ -10,17 +10,15 @@ from threading import Lock
 from utils.matcher import *
 from datetime import datetime
 from tinydb import TinyDB, Query
+import re
 
 locker = Lock()
 
-IS_RUNNING = True
-CURRENT_RUNNING_SESSION_ID = "23c55908-b8a1-4cc7-8c5f-cffd67ffec0f"
-DYNAMIC_SESSION_CONFIGURATION= {}
-MODEL_IN_USE = WhisperModel(
-        "models/hubs/pho-whisper-tiny",
-        compute_type="int8",
-        device="cpu",
-        cpu_threads=4)
+IS_RUNNING = False
+CURRENT_RUNNING_SESSION_ID = ""
+DYNAMIC_SESSION_CONFIGURATION = None
+CURRENT_MODEL_ID = None
+MODEL_IN_USE = None
 
 router = APIRouter()
 
@@ -38,18 +36,31 @@ Table = Query()
 
 from faster_whisper import WhisperModel
 
+def update_dynamic_variable(data):
+    """
+    DYNAMIC_SESSION_CONFIGURATION - data type = list[list]
+    """
+    global DYNAMIC_SESSION_CONFIGURATION
+    with locker:
+        DYNAMIC_SESSION_CONFIGURATION = data
+    
 def change_model_use(model_id):
     global MODEL_IN_USE
-    result = model_db.search(Model.model_id == model_id)
-    if not result:
-        return
-    
+    result = model_db.search(Model.model_id == int(model_id))[0]
     with locker:
         MODEL_IN_USE = WhisperModel(
         result["path"],
         compute_type="int8",
         device="cpu",
         cpu_threads=4)
+
+def initiate_session(session_id, model_id):
+    global CURRENT_RUNNING_SESSION_ID, IS_RUNNING, CURRENT_MODEL_ID
+    change_model_use(model_id)
+    with locker:
+        CURRENT_MODEL_ID = model_id
+        CURRENT_RUNNING_SESSION_ID = session_id
+        IS_RUNNING = True
 
 @router.post("/verification")
 def vefify(response: Response, secret: Annotated[str, Form()]):
@@ -60,6 +71,12 @@ def vefify(response: Response, secret: Annotated[str, Form()]):
         status_code=401,
         content="Unauthorized"
     )
+
+@router.post("/session/upload/dynamic")
+async def upload_dynamic_configuration(request: Request):
+    data = await request.json()
+    update_dynamic_variable(data)
+    return Response(status_code=200)
 
 @router.get("/verification")
 def verification(request: Request):
@@ -86,6 +103,7 @@ def main(_: Request):
     Depends(verify_device_token)
     ])
 async def dashboard(request: Request):
+    print(IS_RUNNING)
     return templates.TemplateResponse("./pages/admin/dashboard.html", {"request": request, "path": "dashboard", "is_running": IS_RUNNING ,"total_schema": len(schema_db), "total_session": len(session_db)})
 
 @router.get("/schema")
@@ -138,26 +156,84 @@ async def create_schema(
         status_code=200
     )
 
-@router.post("/session/dynamic_config")
-def upload_dynamic_configs(req: Request):
-    pass
-
-
 @router.get("/session")
 async def session(request: Request):
-    return templates.TemplateResponse("./pages/admin/session.html", {"request": request, "path": "session", "is_running": IS_RUNNING, "session_id": CURRENT_RUNNING_SESSION_ID})
+    dynamic = []
+    if IS_RUNNING:
+        searched_session = session_db.search(Session.session_id == CURRENT_RUNNING_SESSION_ID)
+        if searched_session:
+            schema_id = searched_session[0]['schema_id']
+            schema_content = schema_db.search(Schema.id == schema_id)[0]['schema_content']
+            dynamic = [None] * len(schema_content) 
+            for index, field in enumerate(schema_content):
+                if field.get("kind") == "in":
+                    predefined_value = field.get("predefined")
+                    if isinstance(predefined_value, str):
+                        match = re.search(r"@session\('([^']+)'\)", predefined_value)
+                        if match:
+                            extracted_name = match.group(1)
+                            dynamic[index] =  extracted_name.title()
+    return templates.TemplateResponse("./pages/admin/session.html", {"request": request, "path": "session", "is_running": IS_RUNNING, "session_id": CURRENT_RUNNING_SESSION_ID, "dynamic": dynamic, "nums": len(dynamic)})
 
-@router.get("session/history/{session_id}")
+@router.post("/session/history/{session_id}")
+async def update_record(request: Request, session_id: str):
+    data = await request.json()
+    table_id = data["table_id"]
+    col_index = data["col"]
+    row_index = data["row"]
+    value = data["value"]
+    tmp_table = temporary_db.search(Table.table_id == table_id)[0]
+    column_name = list(tmp_table['data'].keys())
+    tmp_table['data'][column_name[col_index]][row_index] = value
+    temporary_db.update(tmp_table, lambda x: x["table_id"] == table_id)
+    return Response(status_code=200)
+
+@router.get("/session/history/{session_id}")
 async def working_screen(request: Request, session_id: str):
     searched_session = session_db.search(Session.session_id == session_id)[0]
-    session_name, schema_id, temporary_table_id = searched_session['name'], searched_session['schema_id'], searched_session['table_temporary_id']
+    session_name, schema_id, temporary_table_id, model_id = searched_session['name'], searched_session['schema_id'], searched_session['table_temporary_id'], searched_session['model_id']
     temporary_table = temporary_db.search(Table.table_id == temporary_table_id)
-    
     column_name = temporary_table[0]['data'].keys()
-    data = temporary_table[0]['content']
+    return templates.TemplateResponse("./pages/admin/history.html", {"request": request, "session_name": session_name ,"session_id": session_id,"schema_id": schema_id, "temporary_table_id": temporary_table_id, "column_name": column_name, "model_id": model_id})
 
-@router.get("/session/end")
-async def session(request: Request):
+@router.get("/session/history/{session_id}/get")
+async def working_screen(_: Request, session_id: str):
+    searched_session = session_db.search(Session.session_id == session_id)[0]
+    temporary_table_id = searched_session['table_temporary_id']
+    temporary_table = temporary_db.search(Table.table_id == temporary_table_id)
+    data = list(temporary_table[0]['data'].values())
+    return data
+
+
+@router.post("/session/history/{session_id}/delete/row")
+async def delete_row(request: Request, session_id: str):
+    data = await request.json()
+    table_id = data["table_id"]
+    row_index = data["row"]
+    tmp_table = temporary_db.search(Table.table_id == table_id)[0]
+    column_name = list(tmp_table['data'].keys())
+    for name in column_name:
+        tmp_table['data'][name].pop(row_index)
+
+    temporary_db.update(tmp_table, lambda x: x["table_id"] == table_id)
+    return Response(status_code=200)
+
+@router.post("/session/history/{session_id}/add/row")
+async def add_row(request: Request, session_id: str):
+    data = await request.json()
+    table_id = data["table_id"]
+    record  = data["record"]
+    tmp_table = temporary_db.search(Table.table_id == table_id)[0]
+    column_name = list(tmp_table['data'].keys())
+    for i in range(len(record)):
+        tmp_table['data'][column_name[i]].append(record[i])
+    temporary_db.update(tmp_table, lambda x: x["table_id"] == table_id)
+    temporary_db.update(tmp_table, lambda x: x["table_id"] == table_id)
+    return Response(status_code=200)
+
+
+@router.post("/session/end")
+async def session(_: Request):
     global IS_RUNNING, MODEL_IN_USE, CURRENT_RUNNING_SESSION_ID, DYNAMIC_SESSION_CONFIGURATION
     with locker:
         IS_RUNNING = None
@@ -168,6 +244,7 @@ async def session(request: Request):
         status_code=200,
         content="Stopped!"
     )
+
 
 @router.post("/session")
 async def create_session(
@@ -208,8 +285,8 @@ async def create_session(
         }
     }
     temporary_db.insert(temporary_payload)
-    CURRENT_RUNNING_SESSION_ID = session_id
     
+    initiate_session(session_id, model_id)
     return Response(
         content=session_id,
         status_code=200
@@ -220,11 +297,6 @@ async def get_all_sessions():
     records = session_db.all()
     return JSONResponse(content=records, status_code=200)
 
-
-@router.get("/session/{}")
-async def get_all_sessions():
-    records = session_db.all()
-    return JSONResponse(content=records, status_code=200)
 
 @router.get("/hubs")
 async def model_hub(request: Request):

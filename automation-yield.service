@@ -1,16 +1,12 @@
 [Unit]
-Description=Aumation yield record
+Description=Capstone project 2025
 After=network.target
 
 [Service]
-User=shinigami
-WorkingDirectory=/opt/my_script/
-ExecStart=/bin/bash /opt/my_script/run_script.sh
+User=your_username
+WorkingDirectory=/usr/capstone/SpringCapstone2025
+ExecStart=/bin/bash /user/capstone/SpringCapstone2025/run.sh
 Restart=always
-RestartSec=5
-
-# Environment variables (if needed)
-Environment="PYTHONPATH=/opt/my_script"
 
 [Install]
 WantedBy=multi-user.target
