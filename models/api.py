@@ -1,7 +1,5 @@
 import io
 import wave
-import webrtcvad
-from pydub import AudioSegment
 import io
 
 def transcript(model, audio_bytes):

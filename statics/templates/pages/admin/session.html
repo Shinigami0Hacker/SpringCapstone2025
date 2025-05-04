@@ -161,7 +161,7 @@
     const copyStatus = document.getElementById("copyRunningSessionStatus");
 
     copyUrlButton.addEventListener("click", () => {
-        const url = `${window.location.host}/user/working/${session_id}`;
+        const url = `https://${window.location.host}/user/working/${session_id}`;
         navigator.clipboard.writeText(url).then(() => {
             copyStatus.classList.remove("hidden");
             setTimeout(() => {
