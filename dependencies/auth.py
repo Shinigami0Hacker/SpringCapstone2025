@@ -13,7 +13,7 @@ secret = os.getenv("SECRET_DEVICE_TOKEN")
 
 if not secret:
     if (os_provider == 'posix'):
-        with open("/etc/device-secret-token.key", "r") as f:
+        with open("./config/test.key", "r") as f:
             SECRET_DEVICE_TOKEN = f.read()
     elif (os_provider == 'nt'):
         with open("./config/test.key", "r") as f:
