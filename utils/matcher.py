@@ -269,6 +269,8 @@ def matching(transcription, pronunciations, reference_sentence = None):
 def auto_correct(v, predefined_list):
     dist = []
     for w in predefined_list:
+        if w == 'c' and strip_accents(v) == 'xe':
+            return 'C'
         dis = Levenshtein.distance(v, w)
         dist.append(dis)
     return predefined_list[np.argmin(dist)]
@@ -284,11 +286,11 @@ def formatation_service(entries, indicies, content, dynamic_var):
                  predefined = content[i]['predefined']
                  if isinstance(predefined, str):
                     if dynamic_var is not None:
-                        entries[i] = auto_correct(entries[i], dynamic_var[i]).title()
+                        entries[i] = auto_correct(entries[i], list(map(lambda x: x.lower(), dynamic_var[i]))).title()
                  if isinstance(predefined, list):
                     predefined = list(map(lambda x: x.lower(), predefined))
                     entries[i] = auto_correct(entries[i], predefined).title()
-        entries[i] = entries[i].title()
+        entries[i] = entries[i].title()        
     return entries
 
 
@@ -317,7 +319,12 @@ def handle_permuatation_logic(transcription, pronunciations, reference_sentence 
                         start = m.start(i + 1)
                         end = m.end(i + 1)
                         result[indices[i]] = reference_sentence[start:end]
-            return result, indices 
+            if 0 not in indices and 1 in indices:
+                start = m.start(1)
+                f_value = reference_sentence[:start - len(m.group(1))]
+                indices.append(0)
+                result[0] = f_value
+            return result, sorted(indices)
     return None, None
 
 

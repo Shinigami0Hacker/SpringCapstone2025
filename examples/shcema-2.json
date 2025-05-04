@@ -13,25 +13,15 @@
         "pronuciations":  [
 			"Chiều dài"
         ],
-        "kind": "in",
-        "predefined": [
-            "A",
-            "B",
-            "C"
-        ]
+        "kind": "number"
     },
     {
         "name": "Chiều rộng",
 		"description": "Loại cá A/B/C",
         "pronuciations":  [
-			"Chiều dài"
+			"Chiều Rộng"
         ],
-        "kind": "in",
-        "predefined": [
-            "A",
-            "B",
-            "C"
-        ]
+        "kind": "number"
     },
     {
         "name": "Số ký",
