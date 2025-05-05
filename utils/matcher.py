@@ -303,7 +303,7 @@ def handle_permuatation_logic(transcription, pronunciations, reference_sentence 
         tokens.append(create_matching_token_pattern(pronunciation))
     permuatations = ordered_column_permutation(tokens)
     
-    print(*permuatations, sep="\n")
+    # print(*permuatations, sep="\n")
 
     nums_column = len(pronunciations)
     result = [None] * nums_column
@@ -312,7 +312,7 @@ def handle_permuatation_logic(transcription, pronunciations, reference_sentence 
         pattern = generate_pattern(permuatation[0], permuatation[1])
         m = re.match(pattern, transcription)
         if m:
-            print(pattern)
+            # print(pattern)
             matched_pattern.append((m, permuatation))
 
     if matched_pattern:
