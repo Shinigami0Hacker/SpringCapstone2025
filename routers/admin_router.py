@@ -62,17 +62,6 @@ def initiate_session(session_id, model_id):
         CURRENT_RUNNING_SESSION_ID = session_id
         IS_RUNNING = True
 
-# @router.post("/verification")
-# def vefify(response: Response, secret: Annotated[str, Form()]):
-#     if (secret == os.environ["SECRET_DEVICE_TOKEN"]):
-#         print(secret == os.environ["SECRET_DEVICE_TOKEN"])
-#         response.set_cookie("SECRET_DEVICE_TOKEN", secret, secure=True)
-#         return RedirectResponse("/admin/dashboard", headers=response.headers, status_code=302)
-#     return Response(
-#         status_code=401,
-#         content="Unauthorized"
-#     )
-
 @router.post("/session/upload/dynamic")
 async def upload_dynamic_configuration(request: Request):
     data = await request.json()
@@ -86,7 +75,6 @@ def verification(request: Request):
 @router.post("/verification")
 def verification(secret: Annotated[str, Form()]):
     if os.getenv("SECRET_DEVICE_TOKEN") == secret:
-        print("Hello world")
         response = RedirectResponse("/admin", status_code=303)
         response.set_cookie("SECRET_DEVICE_TOKEN", secret)
         return response
@@ -106,7 +94,6 @@ def main(_: Request):
     Depends(verify_device_token)
     ])
 async def dashboard(request: Request):
-    print(IS_RUNNING)
     return templates.TemplateResponse("./pages/admin/dashboard.html", {"request": request, "path": "dashboard", "is_running": IS_RUNNING ,"total_schema": len(schema_db), "total_session": len(session_db)})
 
 @router.get("/schema")

@@ -127,6 +127,19 @@
                     Add
                 </button>
             </form>
+            <!-- <form action="" method="POST">
+                <label for="title" class="block text-sm font-medium text-gray-700">Name</label>
+                <input type="text" name="name"
+                    class="w-full my-2 h-10 border border-gray-300 rounded-lg p-2 resize-none" required>
+                <label for="title" class="block text-sm font-medium text-gray-700">Schema</label>
+                <select id="schema-select" name="schema_id"
+                    class="w-full my-2 h-10 border border-gray-300 rounded-lg p-2 resize-none"></select>
+                <label for="title" class="block text-sm font-medium text-gray-700">Model</label>
+                <select id="model-select" name="model_id"
+                    class="w-full my-2 h-10 border border-gray-300 rounded-lg p-2 resize-none"></select>
+                <button type="submit"
+                    class="mt-4 text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700">Create</button>
+            </form> -->
         </div>
     </div>
     <script>
@@ -362,11 +375,11 @@
         let audioChunks = [];
         let isRecording = false;
 
-        recordButton.addEventListener('click', async () => {
+        recordButton.addEventListener('click', () => {
             if (isRecording) {
                 stopRecording();
             } else {
-                await startRecording(); // Ensure recording starts immediately
+                startRecording();
             }
         });
 
@@ -459,7 +472,7 @@
                         terminal.append(brk)
                     } else {
                         Toastify({
-                            text: "No human voice detected, speak again!",
+                            text: "No human voice detect, speech again!",
                             duration: 3000,
                             gravity: "top",
                             position: "right",
@@ -468,7 +481,7 @@
                     }
                 };
 
-                mediaRecorder.start(100); // Start recording immediately
+                mediaRecorder.start(100);
                 isRecording = true; // Set recording state to true
                 recordButton.disabled = false;
                 statusDisplay.textContent = "Recording... Speak now";
@@ -478,7 +491,6 @@
                 console.error("Recording error:", error);
             }
         }
-
         function deleteRow(rowIndex) {
             const updatedData = {
                 row: rowIndex,

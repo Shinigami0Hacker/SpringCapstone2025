@@ -1,6 +1,6 @@
 import json
 from tinydb import Query
-from itertools import combinations
+from itertools import combinations, permutations
 from utils.normalize import strip_accents
 import Levenshtein
 import numpy as np
@@ -145,19 +145,20 @@ def get_dynamic_variable(schema):
     
 def ordered_column_permutation(columns):
     """
-    Only match when column are spoken in order
-    @Output:
-    - list[Tuple[Tuple[match_word, index]]]
+    Generate all permutations of all combinations of the input columns.
+    Output:
+        List of tuples (values, indexes) sorted by length of values, descending.
     """
     result = []
     indexed_lst = list(enumerate(columns))
-    for r in range(1, len(columns)+1):
+    
+    for r in range(1, len(columns) + 1):
         for comb in combinations(indexed_lst, r):
-            values = [value for idx, value in comb]
-            indexes = [idx for idx, value in comb]
-            result.append((values, indexes))
-
-    return result
+            for perm in permutations(comb):
+                values = [value for idx, value in perm]
+                indexes = [idx for idx, value in perm]
+                result.append((values, indexes))
+    return sorted(result, key=lambda x: len(x[0]), reverse=True)
 
 def remove_tone(s: str) -> str:
     """Strip all combining marks (tones + diacritics) → pure base letters."""
@@ -166,7 +167,6 @@ def remove_tone(s: str) -> str:
     return unicodedata.normalize("NFC", stripped)
 
 # -------------------
-
 def generate_variants(word: str, max_subs: int = 2) -> set[str]:
     base = remove_tone(word.lower())
     variants = {base}
@@ -293,7 +293,6 @@ def formatation_service(entries, indicies, content, dynamic_var):
         entries[i] = entries[i].title()        
     return entries
 
-
 def pairing(*lists):
     return [' '.join(items) for items in itertools.product(*lists)]
 
@@ -302,29 +301,42 @@ def handle_permuatation_logic(transcription, pronunciations, reference_sentence 
     for pronunciation in pronunciations:
         pronunciation = list(map(str.lower, pronunciation))
         tokens.append(create_matching_token_pattern(pronunciation))
-    permuatations = sorted(ordered_column_permutation(tokens), key=lambda x: len(x[1]), reverse=True)
+    permuatations = ordered_column_permutation(tokens)
+    
+    print(*permuatations, sep="\n")
+
     nums_column = len(pronunciations)
     result = [None] * nums_column
+    matched_pattern = []
     for permuatation in permuatations:
         pattern = generate_pattern(permuatation[0], permuatation[1])
         m = re.match(pattern, transcription)
         if m:
-            indices = permuatation[1]
-            for i in range(len(indices)):
-                    if not reference_sentence:
-                        extracted_word = m.group(i + 1)
-                        if extracted_word:
-                            result[indices[i]] = extracted_word
-                    else:
-                        start = m.start(i + 1)
-                        end = m.end(i + 1)
-                        result[indices[i]] = reference_sentence[start:end]
-            if 0 not in indices and 1 in indices:
-                start = m.start(1)
-                f_value = reference_sentence[:start - len(m.group(1))]
-                indices.append(0)
-                result[0] = f_value
-            return result, sorted(indices)
+            print(pattern)
+            matched_pattern.append((m, permuatation))
+
+    if matched_pattern:
+        best_match = max(matched_pattern, key= lambda x: len(x[1]))
+        m = best_match[0]
+        permuatation = best_match[1] 
+        indices = permuatation[1]
+        for i in range(len(indices)):
+                if not reference_sentence:
+                    extracted_word = m.group(i + 1)
+                    if extracted_word:
+                        result[indices[i]] = extracted_word
+                else:
+                    start = m.start(i + 1)
+                    end = m.end(i + 1)
+                    result[indices[i]] = reference_sentence[start:end]
+        
+        if 0 not in indices and 1 in indices:
+            start = m.start(1)
+            f_value = reference_sentence[:start - len(m.group(1))]
+            indices.append(0)
+            result[0] = f_value
+        return result, sorted(indices)
+
     return None, None
 
 
