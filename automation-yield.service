@@ -3,7 +3,7 @@ Description=Capstone project 2025
 After=network.target
 
 [Service]
-User=your_username
+User=springcapstone2025
 WorkingDirectory=/usr/capstone/SpringCapstone2025
 ExecStart=/bin/bash /user/capstone/SpringCapstone2025/run.sh
 Restart=always
